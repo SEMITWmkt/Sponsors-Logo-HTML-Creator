@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SEMICON 贊助商 HTML 生成器 V5.0 (行內編輯/備份還原版)</title>
+<title>SEMICON 贊助商 HTML 產生器 V5.1.1</title>
 <style>
   :root {
     --primary: #800080;
@@ -11,6 +11,10 @@
     --panel-bg: #ffffff;
     --border: #d1d5db;
     --text-main: #111827;
+    --muted: #6b7280;
+    --ok: #047857;
+    --warn: #92400e;
+    --bad: #b91c1c;
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -100,6 +104,32 @@
   .btn-clear:hover { background: #fecaca; }
   .btn-sys { background: #f3f4f6; color: #374151; padding: 4px 8px; font-size: 0.75rem; border: 1px solid var(--border); cursor: pointer; font-weight: bold; margin-right: 5px;}
   .btn-sys:hover { background: #e5e7eb; }
+  .btn-sys.primary-light { background: #f5eef5; color: var(--primary); border-color: #d8b4d8; }
+  .btn-sys.primary-light:hover { background: #ead7ea; }
+
+  .status-summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: #f9fafb; border: 1px solid var(--border); padding: 10px 12px;
+    margin-bottom: 12px; font-size: 0.82rem; color: #374151;
+  }
+  .summary-main { font-weight: 800; color: var(--text-main); }
+  .summary-sub { color: var(--muted); font-size: 0.76rem; }
+  .publish-state {
+    flex-shrink: 0; border-radius: 999px; padding: 4px 9px; font-size: 0.68rem;
+    line-height: 1.25; font-weight: 900; text-transform: uppercase; border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .publish-state.ready { color: var(--ok); background: #ecfdf5; border-color: #bbf7d0; }
+  .publish-state.attention { color: var(--warn); background: #fffbeb; border-color: #fde68a; }
+
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; text-align: center; padding: 34px 18px; border: 1px dashed var(--border);
+    background: #f9fafb; color: var(--muted); min-height: 180px;
+  }
+  .empty-state-title { font-size: 0.95rem; font-weight: 900; color: var(--text-main); }
+  .empty-state-copy { max-width: 280px; line-height: 1.55; font-size: 0.82rem; margin: 0; }
+  .empty-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
   /* 拖曳列表與項目樣式 */
   .sponsor-list-mgmt { flex-grow: 1; }
@@ -125,6 +155,21 @@
   .mgmt-text { display: flex; flex-direction: column; overflow: hidden; flex-grow: 1; gap: 4px;}
   .mgmt-tier { font-weight: bold; font-size: 0.7rem; color: var(--text-main); }
   .mgmt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: #4b5563;}
+  .mgmt-topline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .status-pill {
+    display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 7px;
+    font-size: 0.62rem; line-height: 1.35; font-weight: 900; letter-spacing: .02em;
+    text-transform: uppercase; border: 1px solid transparent;
+  }
+  .status-pill.ready { color: var(--ok); background: #ecfdf5; border-color: #bbf7d0; }
+  .status-pill.check { color: var(--warn); background: #fffbeb; border-color: #fde68a; }
+  .status-pill.missing { color: var(--bad); background: #fef2f2; border-color: #fecaca; }
+  .status-reason { color: var(--muted); font-size: 0.68rem; font-weight: 700; }
+  .sample-note {
+    display: none; margin-bottom: 10px; padding: 9px 11px; border: 1px solid #fde68a;
+    background: #fffbeb; color: #7c4a03; font-size: 0.78rem; line-height: 1.45;
+  }
+  .sample-note.show { display: block; }
   
   /* 行內編輯與控制區 */
   .mgmt-inline-ctrl { display: flex; gap: 8px; align-items: center; }
@@ -149,9 +194,10 @@
   .preview-controls h2 { font-size: 1.1rem; margin: 0; color: var(--text-main); display: flex; align-items: center; gap: 10px;}
   .preview-badge { background: #e5e7eb; padding: 3px 8px; font-size: 0.75rem; border-radius: 4px; }
   
-  .device-toggles { display: flex; gap: 10px; }
+  .device-toggles { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
   .btn-device { background: #f9fafb; border: 1px solid var(--border); color: #4b5563; padding: 6px 12px; font-size: 0.85rem; cursor: pointer; font-weight: bold;}
   .btn-device.active { background: var(--text-main); color: #fff; border-color: var(--text-main); }
+  .lang-toggles { display: flex; gap: 6px; padding-right: 10px; border-right: 1px solid var(--border); }
   
   .iframe-container { background: #e5e7eb; padding: 20px; flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; transition: all 0.3s; overflow-y: auto;}
   #previewIframe { 
@@ -180,7 +226,7 @@
 <body>
 
 <div class="app-header">
-  <h1>贊助商生成器 V5.0 (行內編輯/備份還原版)</h1>
+  <h1>贊助商 Logo HTML 產生器 V5.1.1</h1>
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('manage')">1. 資料設定與管理</button>
     <button class="tab-btn" onclick="switchTab('preview')">2. 即時預覽與輸出</button>
@@ -249,12 +295,21 @@
         <div class="section-title" style="margin:0; border:none; padding:0;">3. 排序與屬性管理</div>
         <div>
           <!-- 核心新增：專案備份還原系統 -->
-          <button class="btn-sys" onclick="exportData()" title="下載目前的資料備份">💾 匯出</button>
-          <button class="btn-sys" onclick="document.getElementById('importFile').click()" title="載入之前的備份檔">📂 匯入</button>
+          <button class="btn-sys primary-light" onclick="loadSampleData()" title="載入示範資料">Sample</button>
+          <button class="btn-sys" onclick="exportData()" title="下載目前的工作檔">💾 Save work file</button>
+          <button class="btn-sys" onclick="document.getElementById('importFile').click()" title="載入之前儲存的工作檔">📂 Load work file</button>
           <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
           <button class="btn-clear" onclick="clearAllData()">⚠ 清空</button>
         </div>
       </div>
+      <div class="status-summary" id="statusSummary">
+        <div>
+          <div class="summary-main">0 logos · 0 ready · 0 missing · 0 check</div>
+          <div class="summary-sub">目前輸出清單狀態</div>
+        </div>
+        <span class="publish-state attention" id="publishState">Needs attention</span>
+      </div>
+      <div class="sample-note" id="sampleNote">已載入示範資料。正式使用前請清空或替換成實際贊助商 Logo。</div>
       <div class="sponsor-list-mgmt" id="mgmtList">
         <div style="font-size: 0.8rem; color: #999; text-align: center; padding: 20px;">尚未加入任何資料</div>
       </div>
@@ -268,8 +323,12 @@
     
     <div class="preview-section">
       <div class="preview-controls">
-        <h2>即時視覺預覽 <span class="preview-badge">以中文版為例</span></h2>
+        <h2>即時視覺預覽 <span class="preview-badge" id="previewLangBadge">中文版</span></h2>
         <div class="device-toggles">
+          <div class="lang-toggles">
+            <button id="btnPreviewZh" class="btn-device active" onclick="setPreviewLang('zh')">中文</button>
+            <button id="btnPreviewEn" class="btn-device" onclick="setPreviewLang('en')">English</button>
+          </div>
           <button id="btnDesktop" class="btn-device active" onclick="setPreviewMode('desktop')">💻 100% 滿版電腦預覽</button>
           <button id="btnMobile" class="btn-device" onclick="setPreviewMode('mobile')">📱 375px 手機預覽</button>
         </div>
@@ -303,6 +362,9 @@
 <script>
   let sponsors = { platinum: [], gold: [], silver: [], special: [] };
   let draggedItemInfo = null;
+  let currentPreviewLang = 'zh';
+  const TOOL_VERSION = 'v5.1.1';
+  const BACKUP_SCHEMA = 'semicon-sponsors-v1';
 
   function toggleTierSettings() {
     const content = document.getElementById('tierSettingsContent');
@@ -336,11 +398,24 @@
     }
   }
 
+  function setPreviewLang(lang) {
+    currentPreviewLang = lang;
+    document.getElementById('btnPreviewZh').classList.toggle('active', lang === 'zh');
+    document.getElementById('btnPreviewEn').classList.toggle('active', lang === 'en');
+    document.getElementById('previewLangBadge').innerText = lang === 'zh' ? '中文版' : 'English';
+    updatePreviewIframe();
+  }
+
   // --- 本地存儲與匯出匯入 ---
   const STORAGE_KEY = 'semicon_sponsor_state_v5';
 
   function getSaveDataObject() {
     return {
+      schema: BACKUP_SCHEMA,
+      tool: 'Sponsors Logo HTML Generator',
+      version: TOOL_VERSION,
+      projectName: 'SEMICON Taiwan Sponsors',
+      exportedAt: new Date().toISOString(),
       sponsors: sponsors,
       titles: {
         plat_zh: document.getElementById('t_plat_zh').value, plat_en: document.getElementById('t_plat_en').value,
@@ -357,10 +432,18 @@
 
   function applyDataToUI(parsed) {
     if (parsed.sponsors) {
-      for (let tier in parsed.sponsors) {
-        parsed.sponsors[tier].forEach(s => { if (s.scale === undefined) s.scale = 100; });
+      const normalizedSponsors = { platinum: [], gold: [], silver: [], special: [] };
+      for (let tier in normalizedSponsors) {
+        const incoming = parsed.sponsors[tier] || [];
+        normalizedSponsors[tier] = incoming.map(s => ({
+          id: s.id || Date.now().toString() + Math.random().toString(36).slice(2),
+          name: s.name || '',
+          image: s.image || '',
+          link: s.link || '',
+          scale: s.scale === undefined ? 100 : s.scale
+        }));
       }
-      sponsors = parsed.sponsors;
+      sponsors = normalizedSponsors;
     }
     if (parsed.titles) {
       document.getElementById('t_plat_zh').value = parsed.titles.plat_zh || '白金級贊助';
@@ -384,12 +467,12 @@
 
   function exportData() {
     saveData();
-    const dataStr = JSON.stringify(getSaveDataObject());
+    const dataStr = JSON.stringify(getSaveDataObject(), null, 2);
     const blob = new Blob([dataStr], {type: "application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `semicon_sponsors_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `semicon_sponsors_workfile_${new Date().toISOString().slice(0,10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -420,8 +503,65 @@
     if (confirm("確定要清空所有贊助商資料嗎？此操作無法復原。請確認已匯出備份。")) {
       sponsors = { platinum: [], gold: [], silver: [], special: [] };
       localStorage.removeItem(STORAGE_KEY);
+      document.getElementById('sampleNote').classList.remove('show');
       updateSystem();
     }
+  }
+
+  function sponsorStatus(s) {
+    if (!s.image) return { key: 'missing', label: 'Missing', hint: '缺 Logo 圖片' };
+    const hasName = s.name && s.name.trim() && s.name.trim() !== '未命名廠商';
+    const hasLink = s.link && s.link.trim();
+    if (!hasName || !hasLink) return { key: 'check', label: 'Check', hint: !hasName ? '建議補公司名稱' : '尚未填連結' };
+    return { key: 'ready', label: 'Ready', hint: '可輸出' };
+  }
+
+  function getSponsorCounts() {
+    const counts = { total: 0, ready: 0, missing: 0, check: 0 };
+    Object.values(sponsors).forEach(list => {
+      list.forEach(s => {
+        counts.total += 1;
+        counts[sponsorStatus(s).key] += 1;
+      });
+    });
+    return counts;
+  }
+
+  function updateStatusSummary() {
+    const counts = getSponsorCounts();
+    const summary = document.querySelector('#statusSummary .summary-main');
+    const sub = document.querySelector('#statusSummary .summary-sub');
+    const publishState = document.getElementById('publishState');
+    summary.innerText = `${counts.total} logos · ${counts.ready} ready · ${counts.missing} missing · ${counts.check} check`;
+    sub.innerText = counts.total ? '目前輸出清單狀態' : '先加入第一個 Logo，或載入示範資料了解輸出效果';
+    const needsAttention = counts.total === 0 || counts.missing > 0 || counts.check > 0;
+    publishState.className = `publish-state ${needsAttention ? 'attention' : 'ready'}`;
+    publishState.innerText = needsAttention ? 'Needs attention' : 'Ready to publish';
+  }
+
+  function makeSampleLogo(label, color) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="180" viewBox="0 0 360 180"><rect width="360" height="180" fill="white"/><rect x="24" y="24" width="312" height="132" rx="10" fill="${color}" opacity="0.1"/><text x="180" y="101" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" text-anchor="middle" fill="${color}">${label}</text></svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+  }
+
+  function loadSampleData() {
+    const counts = getSponsorCounts();
+    if (counts.total && !confirm('載入示範資料會取代目前清單。請先確認已儲存工作檔。')) return;
+    sponsors = {
+      platinum: [
+        { id: 'sample-platinum-1', name: 'Aurora Semi', image: makeSampleLogo('AURORA', '#800080'), link: 'https://example.com/aurora', scale: 100 }
+      ],
+      gold: [
+        { id: 'sample-gold-1', name: 'Nova Systems', image: makeSampleLogo('NOVA', '#b7791f'), link: '', scale: 95 },
+        { id: 'sample-gold-2', name: 'Vector Fab', image: makeSampleLogo('VECTOR', '#2563eb'), link: 'https://example.com/vector', scale: 100 }
+      ],
+      silver: [],
+      special: [
+        { id: 'sample-special-1', name: '', image: makeSampleLogo('PARTNER', '#047857'), link: 'https://example.com/partner', scale: 90 }
+      ]
+    };
+    document.getElementById('sampleNote').classList.add('show');
+    updateSystem();
   }
 
   const pasteZone = document.getElementById('pasteZone');
@@ -483,6 +623,7 @@
 
     const id = Date.now().toString();
     sponsors[tier].push({ id, name, image, link, scale: 100 }); 
+    document.getElementById('sampleNote').classList.remove('show');
 
     document.getElementById('inputName').value = '';
     document.getElementById('inputLink').value = '';
@@ -517,9 +658,7 @@
 
   function updateSponsorLink(tier, index, val) {
     sponsors[tier][index].link = val.trim();
-    // 網址變更會影響懸浮特效，因此重新編譯 HTML 與存檔
-    generateBilingualHTML();
-    saveData();
+    updateSystem();
   }
 
   const inputs = document.querySelectorAll('.grid-2col input');
@@ -528,6 +667,7 @@
   function updateSystem() {
     renderMgmtList();
     generateBilingualHTML();
+    updateStatusSummary();
     saveData(); 
   }
 
@@ -587,17 +727,23 @@
           updateSystem();
         };
 
-        // 核心修改：在文字區塊加入行內 Link 編輯框
+        const status = sponsorStatus(s);
+        const safeName = s.name || '未命名廠商';
+        const safeLink = s.link || '';
         item.innerHTML = `
           <div class="mgmt-drag-handle" title="按住拖拉進行排序">⋮⋮</div>
           <div class="mgmt-item-info">
             <img src="${s.image}" class="mgmt-thumb" alt="thumb">
             <div class="mgmt-text">
-              <span class="mgmt-tier">${tier.toUpperCase()}</span>
-              <span class="mgmt-name" title="${s.name}">${s.name}</span>
+              <div class="mgmt-topline">
+                <span class="mgmt-tier">${tier.toUpperCase()}</span>
+                <span class="status-pill ${status.key}" title="${status.hint}">${status.label}</span>
+                ${status.key === 'check' ? `<span class="status-reason">${status.hint}</span>` : ''}
+              </div>
+              <span class="mgmt-name" title="${safeName}">${safeName}</span>
               
               <div class="mgmt-inline-ctrl">
-                <input type="text" value="${s.link}" placeholder="未填連結(點此補上)" onchange="updateSponsorLink('${tier}', ${index}, this.value)" title="隨時更新網址，離開輸入框即自動存檔">
+                <input type="text" value="${safeLink}" placeholder="未填連結(點此補上)" onchange="updateSponsorLink('${tier}', ${index}, this.value)" title="隨時更新網址，離開輸入框即自動存檔">
                 <div class="mgmt-scale-ctrl">
                   <input type="range" min="50" max="150" value="${s.scale}" oninput="updateSponsorScale('${tier}', ${index}, this.value)" title="即時視覺校準">
                   <span id="scale-val-${tier}-${index}">${s.scale}%</span>
@@ -617,7 +763,18 @@
         listEl.appendChild(item);
       });
     });
-    if (!hasData) listEl.innerHTML = '<div style="font-size: 0.8rem; color: #999; text-align: center; padding: 10px;">尚未加入任何資料</div>';
+    if (!hasData) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-title">尚未加入 Logo</div>
+          <p class="empty-state-copy">先貼上或上傳第一個贊助商 Logo。若只是想看輸出效果，可以載入示範資料。</p>
+          <div class="empty-actions">
+            <button class="btn-sys primary-light" onclick="document.getElementById('pasteZone').focus()">Add logo</button>
+            <button class="btn-sys" onclick="loadSampleData()">Load sample</button>
+          </div>
+        </div>
+      `;
+    }
   }
 
   function generateBilingualHTML() {
@@ -708,17 +865,25 @@
     const zhCode = buildHTML('zh').trim();
     document.getElementById('outputCodeZh').value = zhCode;
     document.getElementById('outputCodeEn').value = buildHTML('en').trim();
+    updatePreviewIframe();
+  }
 
-    if (document.getElementById('tab-preview').classList.contains('active') || document.getElementById('tab-manage').classList.contains('active')) {
-      document.getElementById('previewIframe').srcdoc = `
-        <html>
-        <head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-        <body style="margin:0; padding-top:20px; background-color: #ffffff;">
-          ${zhCode}
-        </body>
-        </html>
-      `;
+  function updatePreviewIframe() {
+    const zhCode = document.getElementById('outputCodeZh').value;
+    const enCode = document.getElementById('outputCodeEn').value;
+    const activeCode = currentPreviewLang === 'en' ? enCode : zhCode;
+    if (!activeCode) {
+      document.getElementById('previewIframe').srcdoc = "<div style='text-align:center; padding: 20px; color:#999; font-family:sans-serif;'>新增資料後即可預覽</div>";
+      return;
     }
+    document.getElementById('previewIframe').srcdoc = `
+      <html>
+      <head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+      <body style="margin:0; padding-top:20px; background-color: #ffffff;">
+        ${activeCode}
+      </body>
+      </html>
+    `;
   }
 
   function copyCode(elementId) {
@@ -736,7 +901,10 @@
     setTimeout(() => { btn.innerText = originalText; btn.style.background = ""; }, 2000);
   }
 
-  window.onload = loadData;
+  window.onload = function() {
+    loadData();
+    updateStatusSummary();
+  };
 </script>
 </body>
 </html>
